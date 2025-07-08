@@ -25,14 +25,14 @@ local SENTRY_CLIENT = string.format("%s/%s", SDK.SDK_INTERFACE.name, SDK.SDK_INT
 --[=[
 	@param Options Options
 ]=]
-function SDK:Init(Options: Defaults.Options?)
+function SDK:Init(Options: Defaults.Options?, publicKey: Secret?)
 	if not Options then return end
 	if not Options.DSN then return end
 	if not RunService:IsServer() then return end
 
 	HubClass.Options = table.freeze(Defaults:AggregateDictionaries(Defaults.Options, Options))
 
-	self.Options.Transport:Init(self.Options, SENTRY_PROTOCOL_VERSION, SENTRY_CLIENT)
+	self.Options.Transport:Init(self.Options, SENTRY_PROTOCOL_VERSION, SENTRY_CLIENT, publicKey)
 	self.Scope:ConfigureScope(function(Scope)
 		Scope.server_name = self.Options.ServerName
 		Scope.logger = "server"

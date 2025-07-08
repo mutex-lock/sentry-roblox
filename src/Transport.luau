@@ -115,7 +115,7 @@ function Module:CaptureEnvelope(Payload)
 	})
 end
 
-function Module:Init(Options, SENTRY_PROTOCOL_VERSION, SENTRY_CLIENT)
+function Module:Init(Options, sentryProtocolVersion: number, sentryClient: string, publicKeySecret: Secret?)
 	assert(
 		not script:FindFirstChildWhichIsA("BindableFunction"),
 		"The SentrySDK Transport can only be initialized once!"
@@ -126,7 +126,7 @@ function Module:Init(Options, SENTRY_PROTOCOL_VERSION, SENTRY_CLIENT)
 
 	do --/ Process Options
 		local Scheme, PublicKey, Authority, ProjectId =
-			string.match(Options.DSN or "", "^([^:]+)://([^:]+)@([^/]+)/(.+)$")
+			string.match(tostring(Options.DSN) or "", "^([^:]+)://([^:]+)@([^/]+)/(.+)$")
 
 		assert(Scheme, "Invalid Sentry DSN: Scheme not found.")
 		assert(string.match(string.lower(Scheme), "^https?$"), "Invalid Sentry DSN: Scheme not valid.")
@@ -136,12 +136,17 @@ function Module:Init(Options, SENTRY_PROTOCOL_VERSION, SENTRY_CLIENT)
 		assert(ProjectId, "Invalid Sentry DSN: Project ID not found.")
 
 		self.BaseUrl = string.format("%s://%s/api/%s/", Scheme, Authority, ProjectId)
-		self.AuthHeader = string.format(
-			"Sentry sentry_key=%s,sentry_version=%d,sentry_client=%s",
-			PublicKey,
-			SENTRY_PROTOCOL_VERSION,
-			SENTRY_CLIENT
-		)
+
+		self.AuthHeader = if publicKeySecret
+			then publicKeySecret
+				:AddPrefix("Sentry sentry_key=")
+				:AddSuffix(string.format(",sentry_version=%d,sentry_client=%s", sentryProtocolVersion, sentryClient))
+			else string.format(
+				"Sentry sentry_key=%s,sentry_version=%d,sentry_client=%s",
+				PublicKey,
+				sentryProtocolVersion,
+				sentryClient
+			)
 	end
 
 	do --/ Load Relays

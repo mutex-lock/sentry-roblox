@@ -5,7 +5,7 @@
 import { Options } from "./Defaults";
 
 interface SentrySDK {
-	Init(options: Options): void;
+	Init(options: Options, publicKey?: Secret): void;
 }
 
 /**

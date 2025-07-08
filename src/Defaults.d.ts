@@ -3,7 +3,7 @@
  */
 
 export interface Options {
-	DSN: string;
+	DSN: string | Secret;
 	debug?: boolean;
 	DefaultIntegrations?: boolean;
 	Integrations?: Array<ModuleScript>;
