@@ -11,18 +11,19 @@ Module.Name = script.Name
 
 function Module:SetupOnce(AddGlobalEventProcessor, CurrentHub)
 	local RemoteEvent = Instance.new("RemoteEvent")
-	
+
 	SentryClient.Enabled = true
 	RemoteEvent.Parent = script
 	RemoteEvent.OnServerEvent:Connect(function(Player, Event, Hint)
-		if not SentryClient.Enabled then
-			return
-		end
-		
-		SentrySDK:GetCurrentHub():Clone():ConfigureScope(function(Scope)
-			Scope.logger = "client"
-			Scope:SetUser(Player)
-		end):CaptureEvent(Event, Hint)
+		if not SentryClient.Enabled then return end
+
+		SentrySDK:GetCurrentHub()
+			:Clone()
+			:ConfigureScope(function(Scope)
+				Scope.logger = "client"
+				Scope:SetUser(Player)
+			end)
+			:CaptureEvent(Event, Hint)
 	end)
 end
 

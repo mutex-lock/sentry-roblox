@@ -28,8 +28,11 @@ Scope.__index = Scope
 ]=]
 function Scope._AddGlobalEventProcessor(Function)
 	local BindableFunction = Instance.new("BindableFunction")
-	
-	BindableFunction:SetAttribute("RunContext", if RunService:IsClient() then Enum.RunContext.Client else Enum.RunContext.Server)
+
+	BindableFunction:SetAttribute(
+		"RunContext",
+		if RunService:IsClient() then Enum.RunContext.Client else Enum.RunContext.Server
+	)
 	BindableFunction.Name = "GlobalEventProcessor"
 	BindableFunction.OnInvoke = Function
 	BindableFunction.Parent = script
@@ -42,7 +45,7 @@ function Scope.new()
 		extra = {},
 		contexts = {},
 		tags = {},
-		
+
 		_event_processors = {},
 	}, Scope)
 end
@@ -54,7 +57,6 @@ end
 function Scope:ConfigureScope(Callback: (Scope) -> ())
 	Callback(self)
 end
-
 
 --[=[
 	Adds information of the given player to each event sent.
@@ -68,11 +70,9 @@ function Scope:SetUser(Player: Player | number)
 		local IsLocal = (Player == PlayerService.LocalPlayer)
 		local LocaleId = (if IsLocal then LocalizationService.SystemLocaleId else Player.LocaleId)
 		local CountryCode = string.split(LocaleId, "-")[2]
-		
-		if CountryCode then
-			CountryCode = string.upper(CountryCode)
-		end
-		
+
+		if CountryCode then CountryCode = string.upper(CountryCode) end
+
 		self.user = {
 			id = Player.UserId,
 			username = Player.Name,
@@ -82,7 +82,7 @@ function Scope:SetUser(Player: Player | number)
 				MembershipType = Player.MembershipType.Name,
 				Team = if Player.Team then tostring(Player.Team) else nil,
 			},
-			
+
 			geo = {
 				city = "Unknown",
 				country_code = CountryCode,
@@ -90,12 +90,11 @@ function Scope:SetUser(Player: Player | number)
 			},
 		}
 	elseif typeof(Player) == "number" then
-		self.user = {id = Player}
+		self.user = { id = Player }
 	else
 		self.user = nil
 	end
 end
-
 
 --[=[
 ]=]
@@ -105,12 +104,11 @@ end
 
 --[=[
 ]=]
-function Scope:SetExtras(Dictionary: {[string]: Defaults.ValidJSONValues})
+function Scope:SetExtras(Dictionary: { [string]: Defaults.ValidJSONValues })
 	for Key, Value in next, Dictionary do
 		self.extra[Key] = Value
 	end
 end
-
 
 --[=[
 ]=]
@@ -120,12 +118,11 @@ end
 
 --[=[
 ]=]
-function Scope:SetTags(Dictionary: {[string]: Defaults.ValidJSONValues})
+function Scope:SetTags(Dictionary: { [string]: Defaults.ValidJSONValues })
 	for Key, Value in next, Dictionary do
 		self.tags[Key] = Value
 	end
 end
-
 
 --[=[
 ]=]
@@ -147,10 +144,9 @@ end
 
 --[=[
 ]=]
-function Scope:SetFingerprint(Fingerprint: {string})
+function Scope:SetFingerprint(Fingerprint: { string })
 	self.fingerprint = Fingerprint
 end
-
 
 --[=[
 	@param Processor (Event, Hint) -> (Event)
@@ -159,13 +155,12 @@ function Scope:AddEventProcessor(Processor)
 	table.insert(self._event_processors, Processor)
 end
 
-
 --[=[
 ]=]
 function Scope:Clear()
 	local EmptyScope = Scope.new()
-	
-	for Key, Value in next, self do
+
+	for Key, _ in next, self do
 		rawset(self, Key, rawget(EmptyScope, Key))
 	end
 end
@@ -175,7 +170,6 @@ end
 function Scope:Clone()
 	return setmetatable(table.clone(self), Scope)
 end
-
 
 --[=[
 	@unreleased
@@ -192,7 +186,6 @@ function Scope:ClearBreadcrumbs()
 	print([[WIP: The function "Scope:ClearBreadcrumbs" is not yet implemented.]])
 end
 
-
 --[=[
 	@param Event Event
 	@param Hint Hint
@@ -202,7 +195,8 @@ function Scope:ApplyToEvent(Event: Defaults.Event, Hint): Defaults.Event
 		if typeof(Value) == "table" and typeof(Event[Index]) == "table" then
 			if Index == "exception" then
 				for ExceptionIndex, _ in Event.exception or {} do
-					Event.exception[ExceptionIndex] = Defaults:AggregateDictionaries(Event.exception[ExceptionIndex], Value)
+					Event.exception[ExceptionIndex] =
+						Defaults:AggregateDictionaries(Event.exception[ExceptionIndex], Value)
 				end
 			else
 				Event[Index] = Defaults:AggregateDictionaries(Event[Index], Value)
@@ -211,37 +205,31 @@ function Scope:ApplyToEvent(Event: Defaults.Event, Hint): Defaults.Event
 			Event[Index] = Value
 		end
 	end
-	
+
 	local EventProcessors = table.clone(Event._event_processors)
 	Event._event_processors = nil
-	
-	if #Event.contexts then
-		Event.contexts = nil
-	end
-	
-	if #Event.extra then
-		Event.extra = nil
-	end
-	
+
+	if #Event.contexts then Event.contexts = nil end
+
+	if #Event.extra then Event.extra = nil end
+
 	for _, Processor in next, script:GetChildren() do
 		if Processor.Name ~= "GlobalEventProcessor" then continue end
 		if RunService:IsClient() and Processor:GetAttribute("RunContext") ~= Enum.RunContext.Client then continue end
 		if RunService:IsServer() and Processor:GetAttribute("RunContext") ~= Enum.RunContext.Server then continue end
-		
+
 		table.insert(EventProcessors, 1, function(...)
 			return Processor:Invoke(...)
 		end)
 	end
-	
+
 	for _, Processor in next, EventProcessors do
 		local Success, Response = pcall(Processor, Event, Hint)
-		
+
 		if Success then
 			Event = Response
-			
-			if not Event then
-				break
-			end
+
+			if not Event then break end
 		else
 			Event.errors = (Event.errors or {})
 			table.insert(Event.errors, {
@@ -251,8 +239,7 @@ function Scope:ApplyToEvent(Event: Defaults.Event, Hint): Defaults.Event
 			})
 		end
 	end
-	
-	
+
 	return Event
 end
 

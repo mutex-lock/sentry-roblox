@@ -1,6 +1,19 @@
 # Getting Started
 
-There are two supported ways to get Sentry quickly up-and-running in your game:
+There are three supported ways to get Sentry quickly up-and-running in your game:
+
+## Using roblox-ts:
+
+```sh
+pnpm add @rbxts/sentry
+```
+
+```ts
+// sentry.server.ts
+import SentrySDK from "@rbxts/sentry";
+
+SentrySDK.Init({ DSN: "<DSN FROM YOUR SENTRY PROJECT>", });
+```
 
 ## Static Install
 
@@ -9,16 +22,6 @@ and [download the prepared `.rbxm`](https://github.com/devSparkle/sentry-roblox/
 it wherever you'd like to keep your ModuleScripts. It must be parented somewhere
 that replicates to clients, such as `ReplicatedStorage`, if you intend to
 monitor client errors too.
-
-Then, require your script by calling its path:
-
-```lua
-local SentrySDK = require(game:GetService("ReplicatedStorage").SentrySDK)
-
-SentrySDK:Init({
-	DSN = "<DSN FROM YOUR SENTRY PROJECT>"
-})
-```
 
 ## Wally Install
 
@@ -31,6 +34,8 @@ Sentry = "devsparkle/sentry-roblox@^1.0.0"
 
 This install has the benefit of easily updating whenever we release bugfixes,
 security patches and even new features, just by using `wally update`!
+
+# Usage
 
 To complete the installation, add a server-sided script in your game, and paste the following contents:
 

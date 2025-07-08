@@ -3,7 +3,7 @@
 
 local HttpService = game:GetService("HttpService")
 
-local Defaults = require(script.Parent.Parent:WaitForChild("Defaults"))
+--local Defaults = require(script.Parent.Parent:WaitForChild("Defaults"))
 local Transport = require(script.Parent.Parent:WaitForChild("Transport"))
 
 --[=[
@@ -20,7 +20,7 @@ local Client = {}
 --// Functions
 
 function Client.new()
-	return setmetatable({}, {__index = Client})
+	return setmetatable({}, { __index = Client })
 end
 
 --[=[
@@ -32,22 +32,20 @@ end
 	@param Event Event
 	@param Scope Scope
 ]=]
-function Client:CaptureEvent(Event, Hint: {[string]: any}, Scope)
+function Client:CaptureEvent(Event, Hint: { [string]: any }, Scope)
 	if not Hint then Hint = {} end
-	
+
 	Event.event_id = (Hint.event_id or string.gsub(HttpService:GenerateGUID(false), "-", ""))
 	Event.timestamp = DateTime.now().UnixTimestamp
 	Event.sdk = self.SDK_INTERFACE
 	Event.platform = "other"
 	Event = Scope:ApplyToEvent(Event, Hint)
-	
-	if not Event then
-		return
-	end
-	
+
+	if not Event then return end
+
 	local EncodeSuccess, EncodedPayload = pcall(HttpService.JSONEncode, HttpService, Event)
 	if not EncodeSuccess then return end
-	
+
 	return Transport:CaptureEvent(EncodedPayload)
 end
 
@@ -59,14 +57,14 @@ end
 	The client is disabled after this method is called.
 ]=]
 function Client:Close(Timeout: number?)
-	
+	print([[WIP: The function "Client:Close" is not yet implemented.]])
 end
 
 --[=[
 	Same as close difference is that the client is NOT disposed after invocation.
 ]=]
 function Client:Flush(Timeout: number?)
-	
+	print([[WIP: The function "Client:Flush" is not yet implemented.]])
 end
 
 export type Client = typeof(Client.new())

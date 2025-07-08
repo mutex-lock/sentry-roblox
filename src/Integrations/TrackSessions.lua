@@ -18,19 +18,19 @@ function Module:SetupOnce(AddGlobalEventProcessor, CurrentHub)
 			HubScope.user.sid = HttpService:GenerateGUID(false)
 			HubScope.user.started = DateTime.now()
 		end)
-		
+
 		UserHubs[Player] = UserHub
 		UserHub:StartSession()
 	end
-	
+
 	for _, Player in next, PlayerService:GetPlayers() do
 		task.spawn(StartSession, Player)
 	end
-	
+
 	PlayerService.PlayerAdded:Connect(StartSession)
 	PlayerService.PlayerRemoving:Connect(function(Player)
 		local UserHub = UserHubs[Player]
-		
+
 		UserHubs[Player] = nil
 		UserHub:EndSession()
 	end)
