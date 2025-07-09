@@ -10,7 +10,7 @@ position = "right"
 
 [home]
 enabled = true
-includeReadme = false
+includeReadme = true
 
 [[home.features]]
 title = "Reliable"
